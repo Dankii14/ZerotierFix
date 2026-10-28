@@ -8,22 +8,27 @@ on:
   workflow_dispatch:
 
 env:
-  ANDROID_SDK_ROOT: /opt/android-sdk
-  ANDROID_HOME: /opt/android-sdk
+  CORE_TAG: "1.16.2"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
+      - name: Checkout app (ZerotierFix + TCP proxy patch)
+        uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Checkout ZeroTier core 1.16.2
+        run: |
+          mkdir -p externals/core
+          curl -sSL "https://github.com/zerotier/ZeroTierOne/archive/refs/tags/${CORE_TAG}.tar.gz" | tar -xz -C externals/core --strip-components=1
+          curl -sSL "https://raw.githubusercontent.com/sffxzzp/ZerotierFix-Build/main/CMakeLists.txt" -o externals/core/java/CMakeLists.txt
+          ls externals/core | head
 
       - name: Setup Android SDK
         run: |
@@ -40,7 +45,7 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" "cmake;3.22.1" > /dev/null
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
       - uses: actions/upload-artifact@v4
         with:
