@@ -151,4 +151,16 @@
     <string name="dialog_no_notification_alert_title">未开启通知权限</string>
     <string name="open_notification_settings">打开通知设置</string>
     <string name="dont_show_again">不再提示</string>
+    <string name="proxy_settings">TCP 中继 / 代理</string>
+    <string name="tcp_relay_enabled">使用 TCP 中继</string>
+    <string name="tcp_relay_enabled_summary">通过 TCP 将 ZeroTier 流量发送到中继服务器，而不是直连 UDP。适用于 UDP 被封锁的网络。重新连接后生效。</string>
+    <string name="tcp_relay_address">中继地址（主机:端口）</string>
+    <string name="tcp_relay_address_summary">ZeroTier TCP 中继。默认为官方 204.80.128.1:443；自建 zt-tcp-relay 速度更好。</string>
+    <string name="proxy_enabled">通过代理连接中继</string>
+    <string name="proxy_enabled_summary">让中继连接经过 SOCKS5 或 HTTP CONNECT 代理。</string>
+    <string name="proxy_type">代理类型</string>
+    <string name="proxy_address">代理地址（主机:端口）</string>
+    <string name="proxy_address_summary">能够访问中继服务器的 SOCKS5 或 HTTP CONNECT 代理。</string>
+    <string name="proxy_username">代理用户名（可选）</string>
+    <string name="proxy_password">代理密码（可选）</string>
 </resources>

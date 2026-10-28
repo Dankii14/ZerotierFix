@@ -19,6 +19,26 @@ public class Constants {
 
     public static final String PREF_DISABLE_NO_NOTIFICATION_ALERT = "disable_no_notification_alert";
 
+    public static final String PREF_TCP_RELAY_ENABLED = "tcp_relay_enabled";
+
+    public static final String PREF_TCP_RELAY_ADDRESS = "tcp_relay_address";
+
+    public static final String DEFAULT_TCP_RELAY_ADDRESS = "204.80.128.1:443";
+
+    public static final String PREF_PROXY_ENABLED = "proxy_enabled";
+
+    public static final String PREF_PROXY_TYPE = "proxy_type";
+
+    public static final String PREF_PROXY_ADDRESS = "proxy_address";
+
+    public static final String PREF_PROXY_USERNAME = "proxy_username";
+
+    public static final String PREF_PROXY_PASSWORD = "proxy_password";
+
+    public static final String PROXY_TYPE_SOCKS5 = "socks5";
+
+    public static final String PROXY_TYPE_HTTP = "http";
+
     public static final String FILE_CUSTOM_PLANET = "planet.custom";
 
     public static final String FILE_TEMP = "temp";

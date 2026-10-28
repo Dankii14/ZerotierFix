@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import com.zerotier.sdk.Event;
 import com.zerotier.sdk.EventListener;
 import com.zerotier.sdk.Node;
+import com.zerotier.sdk.PacketSender;
 import com.zerotier.sdk.ResultCode;
 import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkConfigListener;
@@ -105,6 +106,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     private NotificationManager notificationManager;
     private TunTapAdapter tunTapAdapter;
     private UdpCom udpCom;
+    private TcpRelayCom relayCom;
     private Thread udpThread;
     private Thread v4MulticastScanner = new Thread() {
         /* class com.zerotier.one.service.ZeroTierOneService.AnonymousClass1 */
@@ -352,13 +354,24 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
 
                 // 创建本地节点
                 if (this.node == null) {
-                    this.udpCom = new UdpCom(this, this.svrSocket);
                     this.tunTapAdapter = new TunTapAdapter(this, networkId);
+
+                    // 选择物理传输方式：TCP 中继（可经过 SOCKS5/HTTP 代理）或直连 UDP
+                    boolean useTcpRelay = preferences.getBoolean(Constants.PREF_TCP_RELAY_ENABLED, false);
+                    this.relayCom = useTcpRelay ? TcpRelayCom.fromPreferences(this, preferences) : null;
+                    PacketSender packetSender;
+                    if (this.relayCom != null) {
+                        Log.i(TAG, "Using ZeroTier TCP relay transport");
+                        packetSender = this.relayCom;
+                    } else {
+                        this.udpCom = new UdpCom(this, this.svrSocket);
+                        packetSender = this.udpCom;
+                    }
 
                     // 创建节点对象并初始化
                     var dataStore = this.dataStore;
                     this.node = new Node(System.currentTimeMillis());
-                    var result = this.node.init(dataStore, dataStore, this.udpCom, this, this.tunTapAdapter, this, null);
+                    var result = this.node.init(dataStore, dataStore, packetSender, this, this.tunTapAdapter, this, null);
 
                     if (result == ResultCode.RESULT_OK) {
                         Log.d(TAG, "ZeroTierOne Node Initialized");
@@ -392,11 +405,16 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     }
 
                     this.eventBus.post(new NodeIDEvent(address));
-                    this.udpCom.setNode(this.node);
+                    if (this.relayCom != null) {
+                        this.relayCom.setNode(this.node);
+                    } else {
+                        this.udpCom.setNode(this.node);
+                    }
                     this.tunTapAdapter.setNode(this.node);
 
-                    // 启动 UDP 消息处理线程
-                    var thread = new Thread(this.udpCom, "UDP Communication Thread");
+                    // 启动物理传输线程
+                    Runnable transport = (this.relayCom != null) ? this.relayCom : this.udpCom;
+                    var thread = new Thread(transport, "ZeroTier Transport Thread");
                     this.udpThread = thread;
                     thread.start();
                 }
@@ -422,6 +440,10 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     public void stopZeroTier() {
+        if (this.relayCom != null) {
+            this.relayCom.stop();
+            this.relayCom = null;
+        }
         if (this.svrSocket != null) {
             this.svrSocket.close();
             this.svrSocket = null;

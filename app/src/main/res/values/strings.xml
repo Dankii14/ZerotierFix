@@ -153,4 +153,16 @@
     <string name="dialog_no_notification_alert_title">Notification Permission Not Granted</string>
     <string name="open_notification_settings">Goto notification settings</string>
     <string name="dont_show_again">Don\'t show again</string>
+    <string name="proxy_settings">TCP Relay / Proxy</string>
+    <string name="tcp_relay_enabled">Use TCP relay</string>
+    <string name="tcp_relay_enabled_summary">Send ZeroTier traffic over TCP to a relay instead of direct UDP. Useful when UDP is blocked. Reconnect for this setting to take effect.</string>
+    <string name="tcp_relay_address">Relay address (host:port)</string>
+    <string name="tcp_relay_address_summary">ZeroTier TCP relay. The default is the official 204.80.128.1:443; a self-hosted zt-tcp-relay is faster.</string>
+    <string name="proxy_enabled">Connect to relay through a proxy</string>
+    <string name="proxy_enabled_summary">Route the relay connection through a SOCKS5 or HTTP CONNECT proxy.</string>
+    <string name="proxy_type">Proxy type</string>
+    <string name="proxy_address">Proxy address (host:port)</string>
+    <string name="proxy_address_summary">A SOCKS5 or HTTP CONNECT proxy that can reach the relay.</string>
+    <string name="proxy_username">Proxy username (optional)</string>
+    <string name="proxy_password">Proxy password (optional)</string>
 </resources>

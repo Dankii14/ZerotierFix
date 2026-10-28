@@ -10,6 +10,40 @@
             android:key="set_planet_file"
             android:title="@string/set_planet_file" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/proxy_settings">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="tcp_relay_enabled"
+            android:summary="@string/tcp_relay_enabled_summary"
+            android:title="@string/tcp_relay_enabled" />
+        <EditTextPreference
+            android:defaultValue="204.80.128.1:443"
+            android:key="tcp_relay_address"
+            android:summary="@string/tcp_relay_address_summary"
+            android:title="@string/tcp_relay_address" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="proxy_enabled"
+            android:summary="@string/proxy_enabled_summary"
+            android:title="@string/proxy_enabled" />
+        <ListPreference
+            android:defaultValue="socks5"
+            android:entries="@array/proxy_types"
+            android:entryValues="@array/proxy_types_values"
+            android:key="proxy_type"
+            android:title="@string/proxy_type" />
+        <EditTextPreference
+            android:defaultValue="127.0.0.1:1080"
+            android:key="proxy_address"
+            android:summary="@string/proxy_address_summary"
+            android:title="@string/proxy_address" />
+        <EditTextPreference
+            android:key="proxy_username"
+            android:title="@string/proxy_username" />
+        <EditTextPreference
+            android:key="proxy_password"
+            android:title="@string/proxy_password" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_network">
         <CheckBoxPreference
             android:defaultValue="false"
