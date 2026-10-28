@@ -2,66 +2,36 @@ name: Build APP
 
 on:
   push:
-    branches: [ "master", "old-android" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      - uses: sparkfabrik/android-build-action@v1.5.0
+
+      - uses: actions/setup-java@v4
         with:
-          project-path: .
-          output-path: app-debug.apk
-          fastlane-env: "debug"
-          ruby-version: "3.3.0"
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platform-tools" "platforms;android-33" "ndk;25.2.9519653" "cmake;3.22.1" > /dev/null
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app-debug.apk
-      - uses: actions/upload-artifact@v4
-        if: github.event_name == 'pull_request'
-        name: Upload app APK
-        with:
-          name: App bundle PR
-          path: app-debug.apk
-      # https://github.com/r0adkll/sign-android-release/issues/84#issuecomment-1889636075
-      - name: Setup build tool version variable
-        shell: bash
-        run: |
-          BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
-          echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
-          echo Last build tool version is: $BUILD_TOOL_VERSION
-      - name: Check signing key availability
-        id: signer_check
-        shell: bash
-        run: |
-          if [ -n "${{ secrets.SIGNING_KEY }}" ]; then
-            echo "available=true" >> $GITHUB_OUTPUT
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-          fi
-      - uses: r0adkll/sign-android-release@v1
-        if: steps.signer_check.outputs.available == 'true'
-        name: Sign app APK
-        id: sign_app
-        with:
-          releaseDirectory: .
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
-      - uses: actions/upload-artifact@v4
-        if: steps.signer_check.outputs.available == 'true'
-        name: Upload signed app APK
-        with:
-          name: Signed app bundle
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: app/build/outputs/apk/debug/app-debug.apk
