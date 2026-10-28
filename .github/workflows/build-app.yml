@@ -21,11 +21,16 @@ jobs:
           output-path: app-debug.apk
           fastlane-env: "debug"
           ruby-version: "3.3.0"
-      - uses: actions/upload-artifact@v3
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app-debug.apk
+      - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         name: Upload app APK
         with:
-          name: App bundle
+          name: App bundle PR
           path: app-debug.apk
       # https://github.com/r0adkll/sign-android-release/issues/84#issuecomment-1889636075
       - name: Setup build tool version variable
@@ -34,8 +39,17 @@ jobs:
           BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
           echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
           echo Last build tool version is: $BUILD_TOOL_VERSION
+      - name: Check signing key availability
+        id: signer_check
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.SIGNING_KEY }}" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+          fi
       - uses: r0adkll/sign-android-release@v1
-        if: github.event_name != 'pull_request'
+        if: steps.signer_check.outputs.available == 'true'
         name: Sign app APK
         id: sign_app
         with:
@@ -46,7 +60,7 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       - uses: actions/upload-artifact@v4
-        if: github.event_name != 'pull_request'
+        if: steps.signer_check.outputs.available == 'true'
         name: Upload signed app APK
         with:
           name: Signed app bundle
